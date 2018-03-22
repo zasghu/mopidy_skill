@@ -1,1 +1,1 @@
-podcast (?P<PodcastName>.*)
+podcast (?P<PodcastNameRx>.*)
