@@ -18,7 +18,7 @@ Mopidy = __import__('mopidypost').Mopidy
 MediaSkill = __import__('media').MediaSkill
 
 logger = getLogger(abspath(__file__).split('/')[-2])
-__author__ = 'forslund'
+__author__ = 'zasghu'
 
 
 class MopidySkill(MediaSkill):
