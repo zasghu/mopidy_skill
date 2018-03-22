@@ -82,6 +82,13 @@ class MopidySkill(MediaSkill):
         for p in self.playlist.keys():
             logger.debug("Playlist: " + p)
             self.register_vocabulary(p, 'PlaylistKeyword' + self.name)
+            
+        intent = IntentBuilder('PlayPodcastIntent' + self.name)\
+            .require('PlayKeyword')\
+            .require('PodcastNameRx')\
+            .build()
+        self.register_intent(intent, self.play_podcast)
+        
         intent = IntentBuilder('PlayPlaylistIntent' + self.name)\
             .require('PlayKeyword')\
             .require('PlaylistKeyword' + self.name)\
@@ -101,11 +108,7 @@ class MopidySkill(MediaSkill):
             .build()
         self.register_intent(intent, self.search_spotify)
         
-        intent = IntentBuilder('PlayPodcastIntent' + self.name)\
-            .require('PlayKeyword')\
-            .require('PodcastNameRx')\
-            .build()
-        self.register_intent(intent, self.play_podcast)
+
 
     def initialize(self):
         logger.info('initializing Mopidy skill')
