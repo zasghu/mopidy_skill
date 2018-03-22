@@ -9,11 +9,11 @@ _base_dict = {'jsonrpc': '2.0', 'id': 1, 'params': {}}
 
 class Mopidy(object):
     def __init__(self, url):
-        print "MOPIDY URL: " + url
+        print("MOPIDY URL: " + url)
         self.is_playing = False
         self.url = url + MOPIDY_API
-        self.volume = None
-        self.clear_list(force=True)
+        #self.volume = None
+        #self.clear_list(force=True)
         self.volume_low = 3
         self.volume_high = 100
 
@@ -25,7 +25,7 @@ class Mopidy(object):
         return r.json()['result'][1]['artists']
 
     def get_playlists(self, filter=None):
-        print "GETTING PLAYLISTS"
+        print("GETTING PLAYLISTS")
         d = copy(_base_dict)
         d['method'] = 'core.playlists.as_list'
         r = requests.post(self.url, data=json.dumps(d))
@@ -39,7 +39,11 @@ class Mopidy(object):
         d['method'] = 'core.library.search'
         d['params'] = {'album': [album]}
         r = requests.post(self.url, data=json.dumps(d))
-        l = [res['albums'] for res in r.json()['result'] if 'albums' in res]
+        rjson = r.json()
+        print(rjson)
+        # if rjson['error']:
+          # return;
+        l = [res['albums'] for res in rjson['result'] if 'albums' in res]
         if filter is None:
             return l
         else:
@@ -56,10 +60,13 @@ class Mopidy(object):
         d = copy(_base_dict)
         d['method'] = 'core.library.browse'
         d['params'] = {'uri': uri}
-        print "BROWSE"
-        r = requests.post(self.url, data=json.dumps(d))
-        if 'result' in r.json():
-            return r.json()['result']
+        print(d)
+        print("BROWSE")
+        
+        rjson = requests.post(self.url, data=json.dumps(d)).json()
+        
+        if 'result' in rjson:
+            return rjson['result']
         else:
             return None
 
@@ -90,33 +97,33 @@ class Mopidy(object):
         r = requests.post(self.url, data=json.dumps(d))
 
     def next(self):
-        if self.is_playing:
-            d = copy(_base_dict)
-            d['method'] = 'core.playback.next'
-            r = requests.post(self.url, data=json.dumps(d))
+        #if self.is_playing:
+        d = copy(_base_dict)
+        d['method'] = 'core.playback.next'
+        r = requests.post(self.url, data=json.dumps(d))
 
     def previous(self):
-        if self.is_playing:
-            d = copy(_base_dict)
-            d['method'] = 'core.playback.previous'
-            r = requests.post(self.url, data=json.dumps(d))
+        #if self.is_playing:
+        d = copy(_base_dict)
+        d['method'] = 'core.playback.previous'
+        r = requests.post(self.url, data=json.dumps(d))
 
     def stop(self):
-        print self.is_playing
-        if self.is_playing:
-            d = copy(_base_dict)
-            d['method'] = 'core.playback.stop'
-            r = requests.post(self.url, data=json.dumps(d))
-            self.is_playing = False
+        print(self.is_playing)
+        #if self.is_playing:
+        d = copy(_base_dict)
+        d['method'] = 'core.playback.stop'
+        r = requests.post(self.url, data=json.dumps(d))
+        self.is_playing = False
 
     def currently_playing(self):
-        if self.is_playing:
-            d = copy(_base_dict)
-            d['method'] = 'core.playback.get_current_track'
-            r = requests.post(self.url, data=json.dumps(d))
-            return r.json()['result']
-        else:
-            return None
+        #if self.is_playing or True:
+        d = copy(_base_dict)
+        d['method'] = 'core.playback.get_current_track'
+        r = requests.post(self.url, data=json.dumps(d))
+        return r.json()['result']
+        # else:
+            # return None
 
     def set_volume(self, percent):
         if self.is_playing:
@@ -149,7 +156,7 @@ class Mopidy(object):
         d['params'] = {'uri': uri}
         r = requests.post(self.url, data=json.dumps(d))
         if 'result' in r.json():
-            print r.json()
+            print(r.json())
             return [e['uri'] for e in r.json()['result']]
         else:
             return None
@@ -176,9 +183,9 @@ class Mopidy(object):
         return {e['name']: e for e in p if e['type'] == 'directory'}
 
     def get_local_playlists(self):
-        print "GETTING PLAYLISTS"
+        print("GETTING PLAYLISTS")
         p = self.get_playlists('m3u')
-        print "RETURNING PLAYLISTS"
+        print("RETURNING PLAYLISTS")
         return {e['name']: e for e in p}
 
     def get_spotify_playlists(self):
@@ -187,9 +194,9 @@ class Mopidy(object):
 
     def get_gmusic_albums(self):
         p = self.browse('gmusic:album')
-        print p
+        print(p)
         p = {e['name']: e for e in p if e['type'] == 'directory'}
-        print p
+        print(p)
         return {e.split(' - ')[1]: p[e] for e in p}
 
     def get_gmusic_artists(self):
@@ -199,3 +206,14 @@ class Mopidy(object):
     def get_gmusic_radio(self):
         p = self.browse('gmusic:radio')
         return {e['name']: e for e in p if e['type'] == 'directory'}
+        
+        
+    def get_poddcast(self, uri=None):
+        if not uri:
+            b = self.browse(None)
+            for e in b:
+                if e['name'] == 'Podcasts':
+                    return self.browse(e['uri'])
+        else:
+            print(uri)
+            return self.browse(uri)

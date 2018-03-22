@@ -100,6 +100,12 @@ class MopidySkill(MediaSkill):
             .require('SpotifyKeyword')\
             .build()
         self.register_intent(intent, self.search_spotify)
+        
+        intent = IntentBuilder('PlayPodcastIntent' + self.name)\
+            .require('PlayKeyword')\
+            .require('PodcastNameRx')\
+            .build()
+        self.register_intent(intent, self.play_podcast)
 
     def initialize(self):
         logger.info('initializing Mopidy skill')
@@ -183,6 +189,18 @@ class MopidySkill(MediaSkill):
                 self.play(results[0]['uri'])
             else:
                 self.speak('couldn\'t find an album matching ' + name)
+                
+    def play_podcast(self, message):
+      name = message.data['PodcastName']
+      #print(mpd.get_poddcast())
+      #print(self.mopidy.currently_playing())
+      podcasts = self.mopidy.get_poddcast()
+      for pod in podcasts:
+        if name.lower() in pod["name"].lower():
+          apodd =  self.mopidy.get_poddcast(pod['uri'])
+          if(len(apodd)>0):
+            mpd.add_list(apodd[0]['uri'])
+            break
 
 
 def create_skill():
