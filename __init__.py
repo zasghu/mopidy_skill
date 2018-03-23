@@ -194,7 +194,7 @@ class MopidySkill(MediaSkill):
                 self.speak('couldn\'t find an album matching ' + name)
                 
     def play_podcast(self, message):
-      name = message.data['PodcastName']
+      name = message.data['PodcastNameRx']
       #print(mpd.get_poddcast())
       #print(self.mopidy.currently_playing())
       podcasts = self.mopidy.get_poddcast()
@@ -202,7 +202,7 @@ class MopidySkill(MediaSkill):
         if name.lower() in pod["name"].lower():
           apodd =  self.mopidy.get_poddcast(pod['uri'])
           if(len(apodd)>0):
-            mpd.add_list(apodd[0]['uri'])
+            self.play(apodd[0]['uri'])
             break
 
 
